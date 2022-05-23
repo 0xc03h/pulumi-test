@@ -97,11 +97,11 @@ export const pvc = pvclaim.metadata.name;
 
 const cm = new ConfigMap(`configmap`, {
   metadata: {
-    name: "usermanagement-dbcreation-script",
+    name: "mysql-init-script",
     namespace: nameSpace,
   },
   data: {
-    "mysql_usermgmt.sql": `|-
+    "mysql_usermgmt.sql": `|
 DROP DATABASE IF EXISTS webappdb;
 CREATE DATABASE webappdb;`.toString(),
   },
@@ -142,7 +142,7 @@ const mysqlDeploy = new Deployment("mysql", {
                 mountPath: "/var/lib/mysql",
               },
               {
-                name: "usermanagement-dbcreation-script",
+                name: "mysql-init-script",
                 mountPath: "/docker-entrypoint-initdb.d",
               },
             ],
@@ -154,8 +154,8 @@ const mysqlDeploy = new Deployment("mysql", {
             persistentVolumeClaim: { claimName: pvc },
           },
           {
-            name: "usermanagement-dbcreation-script",
-            configMap: { name: "usermanagement-dbcreation-script" },
+            name: "mysql-init-script",
+            configMap: { name: "mysql-init-script" },
           },
         ],
       },
@@ -177,3 +177,4 @@ export const ip = frontend.status.loadBalancer.apply(
 );
 export const name = nginxDeploy.metadata.name;
 //export const pv = pvolume.metadata.name;
+export const myname = mysql.metadata.name;
