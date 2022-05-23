@@ -75,9 +75,10 @@ const pvolume = new PersistentVolume(`pv`, {
   },
   spec: {
     storageClassName: "standard",
-    capacity: { storage: "10Gi" },
+    capacity: { storage: "1Gi" },
     accessModes: ["ReadWriteOnce"],
-    hostPath: { path: "/mnt/data" },
+    persistentVolumeReclaimPolicy: "Retain",
+    hostPath: { path: "/tmp/data" },
   },
 });
 
@@ -87,7 +88,7 @@ const pvclaim = new PersistentVolumeClaim(`pvc`, {
     storageClassName: "standard",
     accessModes: ["ReadWriteOnce"],
     resources: {
-      requests: { storage: "3Gi" },
+      requests: { storage: "1Gi" },
     },
   },
 });
@@ -116,7 +117,7 @@ const mysqlDeploy = new Deployment("mysql", {
     strategy: { type: "Recreate" },
     template: {
       metadata: {
-        labels: { app: "mysql" },
+        labels: appLabels,
       },
       spec: {
         containers: [
@@ -159,6 +160,15 @@ const mysqlDeploy = new Deployment("mysql", {
         ],
       },
     },
+  },
+});
+
+const mysql = new Service(`mysql`, {
+  metadata: { labels: appLabels, namespace: nameSpace },
+  spec: {
+    type: "LoadBalancer",
+    ports: [{ port: 3306, targetPort: 3306, protocol: "TCP" }],
+    selector: appLabels,
   },
 });
 
