@@ -101,9 +101,9 @@ const cm = new ConfigMap(`configmap`, {
     namespace: nameSpace,
   },
   data: {
-    "mysql_usermgmt.sql": `|
-DROP DATABASE IF EXISTS webappdb;
-CREATE DATABASE webappdb;`.toString(),
+    "initdb.sql": `DROP DATABASE IF EXISTS webappdb;
+CREATE DATABASE webappdb;
+`.toString(),
   },
 });
 
@@ -123,7 +123,7 @@ const mysqlDeploy = new Deployment("mysql", {
         containers: [
           {
             name: "mysql",
-            image: "mysql:5.6",
+            image: config.require("mysql"),
             env: [
               {
                 name: "MYSQL_ROOT_PASSWORD",
@@ -137,24 +137,24 @@ const mysqlDeploy = new Deployment("mysql", {
               },
             ],
             volumeMounts: [
+              // {
+              //   name: "mysql-persistent-storage",
+              //   mountPath: "/var/lib/mysql",
+              // },
               {
-                name: "mysql-persistent-storage",
-                mountPath: "/var/lib/mysql",
-              },
-              {
-                name: "mysql-init-script",
+                name: "mysql-init",
                 mountPath: "/docker-entrypoint-initdb.d",
               },
             ],
           },
         ],
         volumes: [
+          // {
+          //   name: "mysql-persistent-storage",
+          //   persistentVolumeClaim: { claimName: pvc },
+          // },
           {
-            name: "mysql-persistent-storage",
-            persistentVolumeClaim: { claimName: pvc },
-          },
-          {
-            name: "mysql-init-script",
+            name: "mysql-init",
             configMap: { name: "mysql-init-script" },
           },
         ],
